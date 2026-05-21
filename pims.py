@@ -50,9 +50,17 @@ def prompt_non_empty(prompt_text):
         print("Input cannot be empty.")
 
 
+def prompt_int(prompt_text):
+    while True:
+        value = input(prompt_text).strip()
+        if value.isdigit():
+            return int(value)
+        print("Input must be a positive integer.")
+
+
 def add_record(records, file_path):
     print("\n--- Add New Record ---")
-    record_id = prompt_non_empty("Enter ID: ")
+    record_id = prompt_int("Enter ID (integer): ")
     if find_record_index(records, record_id) is not None:
         print(">> ERROR: ID already exists. Record rejected.")
         return
@@ -85,7 +93,7 @@ def add_record(records, file_path):
 
 def edit_record(records, file_path):
     print("\n--- Edit Record ---")
-    record_id = prompt_non_empty("Enter ID to edit: ")
+    record_id = prompt_int("Enter ID to edit: ")
     index = find_record_index(records, record_id)
     if index is None:
         print(">> ERROR: Record ID not found.")
@@ -122,7 +130,7 @@ def edit_record(records, file_path):
 
 def remove_record(records, file_path):
     print("\n--- Remove Record ---")
-    record_id = prompt_non_empty("Enter ID to remove: ")
+    record_id = prompt_int("Enter ID to remove: ")
     index = find_record_index(records, record_id)
     if index is None:
         print(">> ERROR: Record ID not found.")
@@ -182,7 +190,7 @@ def show_sorted_list(records):
     choice = input("Choose sort criteria (A/B/C): ").strip().upper()
 
     if choice == "A":
-        sorted_records = sorted(records, key=lambda item: str(item["id"]))
+        sorted_records = sorted(records, key=lambda item: item["id"])
         header = "--- Sorted Records (by ID) ---"
     elif choice == "B":
         sorted_records = sorted(records, key=lambda item: (item["first_name"].lower(), item["last_name"].lower()),)
