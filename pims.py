@@ -1,13 +1,14 @@
-import json
-import os
-import re
+import json #For handling JSON data storage and retrieval
+import os #For file handling and checking file existence
+import re #For validating phone numbers and email addresses using regular expressions
 
 DATA_FILE = "data.json"
 
 PHONE_PATTERN = re.compile(r"^90\d{10}$")
 EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9_]+@(gmail|outlook|yahoo)\.com$")
 
-
+# Functions
+# Load records from the JSON file, returning an empty list if the file doesn't exist or is invalid
 def load_records(file_path):
     if not os.path.exists(file_path):
         return []
@@ -61,8 +62,12 @@ def add_record(records, file_path):
     phone = prompt_non_empty("Enter Phone Number (starts with 90, 12 digits): ")
     email = prompt_non_empty("Enter Email: ")
 
-    if not validate_phone(phone) or not validate_email(email):
-        print(">> ERROR: Invalid phone number or email structure. Record rejected.")
+    if not validate_email(email):
+        print(">> ERROR: Invalid email structure. Record rejected.")
+        return
+    
+    if not validate_phone(phone):
+        print(">> ERROR: Invalid phone number. Record rejected.")
         return
 
     records.append(
@@ -102,10 +107,14 @@ def edit_record(records, file_path):
         "email": email or record["email"],
     }
 
-    if not validate_phone(updated["phone"]) or not validate_email(updated["email"]):
-        print(">> ERROR: Invalid phone number or email structure. Edit canceled.")
+    if not validate_phone(updated["phone"]):
+        print(">> ERROR: Invalid phone number. Edit canceled.")
         return
-
+    
+    if not validate_email(updated["email"]):
+        print(">> ERROR: Invalid email structure. Edit canceled.")
+        return   
+    
     records[index] = updated
     save_records(file_path, records)
     print(">> Record updated successfully!")
@@ -134,21 +143,21 @@ def search_records(records):
     email = input("Search Email: ").strip()
 
     criteria = {
-        "first_name": None if first_name.lower() == "empty" else first_name,
-        "last_name": None if last_name.lower() == "empty" else last_name,
+        "first_name": None if first_name.lower() == "empty" else first_name.lower(),
+        "last_name": None if last_name.lower() == "empty" else last_name.lower(),
         "phone": None if phone.lower() == "empty" else phone,
-        "email": None if email.lower() == "empty" else email,
+        "email": None if email.lower() == "empty" else email.lower(),
     }
 
     matches = []
     for record in records:
-        if criteria["first_name"] and record["first_name"] != criteria["first_name"]:
+        if criteria["first_name"] and record["first_name"].lower() != criteria["first_name"]:
             continue
-        if criteria["last_name"] and record["last_name"] != criteria["last_name"]:
+        if criteria["last_name"] and record["last_name"].lower() != criteria["last_name"]:
             continue
         if criteria["phone"] and record["phone"] != criteria["phone"]:
             continue
-        if criteria["email"] and record["email"] != criteria["email"]:
+        if criteria["email"] and record["email"].lower() != criteria["email"]:
             continue
         matches.append(record)
 
@@ -176,10 +185,7 @@ def show_sorted_list(records):
         sorted_records = sorted(records, key=lambda item: str(item["id"]))
         header = "--- Sorted Records (by ID) ---"
     elif choice == "B":
-        sorted_records = sorted(
-            records,
-            key=lambda item: (item["first_name"].lower(), item["last_name"].lower()),
-        )
+        sorted_records = sorted(records, key=lambda item: (item["first_name"].lower(), item["last_name"].lower()),)
         header = "--- Sorted Records (by Name) ---"
     elif choice == "C":
         sorted_records = sorted(records, key=lambda item: item["phone"])
@@ -200,9 +206,9 @@ def show_sorted_list(records):
         )
 
 
+# Main
 def main():
-    file_path = DATA_FILE
-    records = load_records(file_path)
+    records = load_records(DATA_FILE)
 
     while True:
         print("\n*** PERSONAL INFORMATION SYSTEM ***")
@@ -215,17 +221,17 @@ def main():
         choice = input("Select an option (1-6): ").strip()
 
         if choice == "1":
-            add_record(records, file_path)
+            add_record(records, DATA_FILE)
         elif choice == "2":
-            edit_record(records, file_path)
+            edit_record(records, DATA_FILE)
         elif choice == "3":
-            remove_record(records, file_path)
+            remove_record(records, DATA_FILE)
         elif choice == "4":
             search_records(records)
         elif choice == "5":
             show_sorted_list(records)
         elif choice == "6":
-            print("Shutting down core processes. Execution terminated.")
+            print("Shutting down core processes... Execution terminated. Goodbye!")
             break
         else:
             print(">> ERROR: Invalid selection.")
